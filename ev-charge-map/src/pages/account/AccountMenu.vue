@@ -1,0 +1,115 @@
+<template>
+  <q-page id="accountMenu">
+    <q-toolbar class="text-white bg-teal-8">
+      <q-toolbar-title>
+        Account
+      </q-toolbar-title>
+    </q-toolbar>
+
+    <div class="text-h6 text-center q-pa-xl">
+        <q-avatar size="60px" color="green">{{ getFirstLettersOfName() }}</q-avatar>
+        <div>{{ capFirstLettersOfFullName() }}</div>
+    </div>
+
+    <div class="menu">
+      <q-separator inset />
+
+      <q-list class="q-mx-md">
+        <q-item clickable v-ripple @click="router.push('/account/my-details')">
+          <q-item-section avatar>
+            <q-avatar rounded color="primary" text-color="white" icon="account_box" />
+          </q-item-section>
+
+          <q-item-section class="text-size">My Details</q-item-section>
+
+          <q-item-section side>
+            <q-icon name="arrow_right" size="35px" />
+          </q-item-section>
+        </q-item>
+      </q-list>
+
+      <q-separator inset />
+
+      <q-list class="q-mx-md">
+        <q-item clickable v-ripple @click="logout">
+          <q-item-section avatar>
+            <q-avatar rounded color="red" text-color="white" icon="logout" />
+          </q-item-section>
+
+          <q-item-section class="text-size">Logout</q-item-section>
+
+          <q-item-section side>
+            <q-icon name="arrow_right" size="35px" />
+          </q-item-section>
+        </q-item>
+      </q-list>
+    </div>
+  </q-page>
+</template>
+
+<script setup>
+import { useRouter } from 'vue-router'
+import { useUserStore } from 'src/stores/user-store'
+import { useQuasar } from 'quasar'
+import { useRouteStore } from 'src/stores/route-store'
+
+const userStore = useUserStore()
+const routeStore = useRouteStore()
+const $q = useQuasar()
+const router = useRouter()
+
+const logout = () => {
+  const res = $q.dialog({
+    title: 'Logout',
+    message: 'Are you sure you want to logout?',
+    cancel: true,
+    persistent: true
+  })
+
+  res.onOk(async () => {
+    try {
+      await userStore.logout()
+      userStore.clearUser()
+      routeStore.clearRoute()
+      router.push('/map')
+    } catch (error) {
+      console.log(error)
+    }
+  })
+}
+
+const capitalizeFirstLetter = (string) => {
+  return string.charAt(0).toUpperCase() + string.slice(1)
+}
+
+const getFirstLetter = (string) => {
+  return string.charAt(0)
+}
+
+const getFirstLettersOfName = () => {
+  const fname = capitalizeFirstLetter(userStore.getFirstName)
+  const lname = capitalizeFirstLetter(userStore.getLastName)
+
+  return getFirstLetter(fname) + getFirstLetter(lname)
+}
+
+const capFirstLettersOfFullName = () => {
+  const fname = capitalizeFirstLetter(userStore.getFirstName)
+  const lname = capitalizeFirstLetter(userStore.getLastName)
+
+  return fname + ' ' + lname
+}
+</script>
+
+<style lang="scss">
+#accountMenu {
+  .menu {
+    margin: 0 auto;
+    max-width: 500px;
+  }
+
+  .text-size {
+    font-size: 18px;
+  }
+}
+</style>
